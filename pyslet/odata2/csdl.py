@@ -2229,8 +2229,8 @@ class Entity(TypeInstance):
         if self.type_def is None:
             raise ModelIncomplete("Unbound EntitySet: %s (%s)" % (
                 self.entity_set.name, self.entity_set.entityTypeName))
-        for np in self.type_def.NavigationProperty:
-            self.data[np.name] = DeferredValue(np.name, self)
+        #for np in self.type_def.NavigationProperty:
+        #    self.data[np.name] = DeferredValue(np.name, self)
 
     def __iter__(self):
         """Iterates over the property names, including the navigation
@@ -4499,11 +4499,11 @@ class EntitySet(CSDLElement):
                         elif iEnd.otherEnd.associationEnd.multiplicity == Multiplicity.One:
                             self.set_unbound_principal(iEnd)
                         self.linkEnds[iEnd] = navName
-            for np in self.entityType.NavigationProperty:
-                if np.name not in self.navigation:
-                    raise ModelIncomplete(
-                        "Navigation property %s in EntitySet %s is not bound to an association set" %
-                        (np.name, self.name))
+            #for np in self.entityType.NavigationProperty:
+            #    if np.name not in self.navigation:
+            #        raise ModelIncomplete(
+            #            "Navigation property %s in EntitySet %s is not bound to an association set" %
+            #            (np.name, self.name))
 
     def KeyKeys(self):
         warnings.warn(
