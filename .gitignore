@@ -22,4 +22,4 @@ unittests/pyslet
 samples/pyslet
 pep8-count.txt
 flake8-count.txt
-
+.idea/
