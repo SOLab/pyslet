@@ -197,11 +197,11 @@ class Credentials(object):
 
 class BasicCredentials(Credentials):
 
-    def __init__(self):
+    def __init__(self, userid=None, password=None):
         Credentials.__init__(self)
         self.scheme = "Basic"
-        self.userid = None
-        self.password = None
+        self.userid = userid
+        self.password = password
         # a list of path-prefixes for which these credentials are known
         # to be good
         self.pathPrefixes = []
