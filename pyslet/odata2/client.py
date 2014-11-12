@@ -12,6 +12,7 @@ import pyslet.rfc2396 as uri
 import pyslet.rfc2616 as http
 import pyslet.http.params as params
 import pyslet.http.messages as messages
+import pyslet.http.auth as auth
 import pyslet.xml20081126.structures as xml
 import pyslet.rfc4287 as atom
 import pyslet.rfc5023 as app
@@ -898,7 +899,7 @@ class Client(app.Client):
     Can be constructed with an optional URL specifying the service root of an
     OData service.  The URL is passed directly to :py:meth:`LoadService`."""
 
-    def __init__(self, serviceRoot=None, **kwargs):
+    def __init__(self, serviceRoot=None, credentials=None, **kwargs):
         app.Client.__init__(self, **kwargs)
         #: a :py:class:`pyslet.rfc5023.Service` instance describing this
         #: service
@@ -915,19 +916,25 @@ class Client(app.Client):
         #: the service
         self.model = None
         if serviceRoot is not None:
-            self.LoadService(serviceRoot)
+            self.LoadService(serviceRoot, credentials)
 
-    def LoadService(self, serviceRoot):
+    def LoadService(self, serviceRoot, credentials=None):
         """Configures this client to use the service at *serviceRoot*
 
-        *serviceRoot* is a string or :py:class:`pyslet.rfc2396.URI` instance."""
+        *serviceRoot* is a string or :py:class:`pyslet.rfc2396.URI` instance."""        
         if isinstance(serviceRoot, uri.URI):
             self.serviceRoot = serviceRoot
         else:
             self.serviceRoot = uri.URI.from_octets(serviceRoot)
         request = http.ClientRequest(str(self.serviceRoot))
-        request.set_header('Accept', 'application/atomsvc+xml')
-        self.process_request(request)
+        if credentials is not None:                        
+            if type(credentials) is list:         
+                credentials = auth.BasicCredentials(credentials[0], credentials[1])                        
+            if type(credentials) is not auth.BasicCredentials:
+                raise Exception('unknown credentials type')            
+            self.add_credentials(credentials)        
+        request.set_header('Accept', 'application/atomsvc+xml')               
+        self.process_request(request)        
         if request.status != 200:
             raise UnexpectedHTTPResponse(
                 "%i %s" % (request.status, request.response.reason))
@@ -950,7 +957,7 @@ class Client(app.Client):
             self.pathPrefix = self.pathPrefix[:-1]
         metadata = uri.URI.from_octets('$metadata').resolve(serviceRoot)
         doc = edmx.Document(baseURI=metadata, reqManager=self)
-        defaultContainer = None
+        defaultContainer = None        
         try:
             doc.Read()
             if isinstance(doc.root, edmx.Edmx):
@@ -971,7 +978,7 @@ class Client(app.Client):
                 raise DataFormatError(str(metadata))
         except xml.XMLError as e:
             # Failed to read the metadata document, there may not be one of
-            # course
+            # course            
             raise DataFormatError(str(e))
         # Missing feeds are pruned from the list, perhaps the service advertises them
         # but if we don't have a model of them we can't use of them
