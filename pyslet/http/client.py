@@ -913,7 +913,9 @@ class Client(PEP8Compatibility, object):
         for a specific context but you must pass this call on to this
         implementation for proper processing."""
         if self.httpUserAgent and not request.has_header('User-Agent'):
-            request.set_header('User-Agent', self.httpUserAgent)
+            request.set_header('User-Agent', self.httpUserAgent)        
+        if not request.has_header("Authorization") and len(self.credentials) == 1:
+            request.set_authorization(self.credentials[0])
         # assign this request to a connection straight away
         start = time.time()
         thread_id = threading.current_thread().ident
@@ -1198,7 +1200,7 @@ class Client(PEP8Compatibility, object):
         Credentials are used in response to challenges received in HTTP
         401 responses."""
         with self.managerLock:
-            self.credentials.append(credentials)
+            self.credentials.append(credentials)        
 
     def remove_credentials(self, credentials):
         """Removes credentials from this manager.
@@ -1477,12 +1479,16 @@ class ClientRequest(messages.Request):
             # The response has finished
             self.finished()
 
-    def send_header(self):
-        # Check authorization and add credentials if the manager has them
-        if not self.has_header("Authorization"):
-            credentials = self.manager.find_credentials_by_url(self.url)
-            if credentials:
-                self.set_authorization(credentials)
+    def send_header(self):        
+        # This bloody logic below doesn't work for basic auth and thus was commented out.
+        # See queue_request method where we now set Authentication headers.
+
+        # Check authorization and add credentials if the manager has them        
+        #if not self.has_header("Authorization") and len(self.credentials) == 1:
+            #self.set_authorization(self.credentials[0])
+            #credentials = self.manager.find_credentials_by_url(self.url)
+            #if credentials:
+            #    self.set_authorization(credentials)
         return super(ClientRequest, self).send_header()
 
     def response_finished(self, err=None):
