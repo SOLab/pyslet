@@ -3541,15 +3541,16 @@ class Entry(atom.Entry):
                         "No context to resolve entity URI: %s" % str(
                             link.href))
         else:
+            pass
             # entity exists, look to see if it has been expanded
-            for link in self.Link:
-                if not link.rel.startswith(ODATA_RELATED):
-                    continue
-                navProperty = link.rel[len(ODATA_RELATED):]
-                if not entity.IsNavigationProperty(navProperty):
-                    continue
-                targetSet = entity.entity_set.NavigationTarget(navProperty)
-                link.LoadExpansion(entity[navProperty])
+            #for link in self.Link:
+            #    if not link.rel.startswith(ODATA_RELATED):
+            #        continue
+            #    navProperty = link.rel[len(ODATA_RELATED):]
+            #    if not entity.IsNavigationProperty(navProperty):
+            #        continue
+            #    targetSet = entity.entity_set.NavigationTarget(navProperty)
+            #    link.LoadExpansion(entity[navProperty])
         return entity
 
     def SetValue(self, entity, for_update=False):
